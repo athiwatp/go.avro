@@ -21,5 +21,6 @@ However I could not find one which had all of the following features:
 - Native Schema type and expressive type semantics
 - Fully dynamic at runtime (does not use code generation)
 - Pluggable logical type decoding with sane defaults
+- Avro HTTP RPC implementation for `net/rpc`
 
 This library attempts to implement all of the above.
