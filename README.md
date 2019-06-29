@@ -22,5 +22,6 @@ However I could not find one which had all of the following features:
 - Fully dynamic at runtime (does not use code generation)
 - Pluggable logical type decoding with sane defaults
 - Avro HTTP RPC implementation for `net/rpc`
+- Validation of arbitrary values against schemas
 
 This library attempts to implement all of the above.
