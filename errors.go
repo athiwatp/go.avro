@@ -3,6 +3,7 @@ package avro
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 // ErrMissingRequiredAttribute is returned by Encode or Decode when a schema is
@@ -50,7 +51,28 @@ func (e ErrInvalidValue) Error() string {
 }
 
 type ErrValidation struct {
-	FieldErrors map[string]ErrValidation
+	error
+	Children map[string]error
 }
 
-func (e ErrValidation) Error() string { return "" }
+func (e ErrValidation) Error() string {
+	return e.errIndent(0)
+}
+
+func (e ErrValidation) errIndent(idt int) string {
+	errs := make([]string, 0, len(e.Children)+1)
+	pad := strings.Repeat("  ", idt)
+	if e.error != nil {
+		errs = append(errs, pad+e.error.Error())
+	}
+	for key, err := range e.Children {
+		var errStr string
+		if err, ok := err.(ErrValidation); ok {
+			errStr = err.errIndent(idt + 1)
+		} else {
+			errStr = err.Error()
+		}
+		errs = append(errs, fmt.Sprintf("%s%s: %s", pad, key, errStr))
+	}
+	return strings.Join(errs, "\n")
+}

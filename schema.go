@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"time"
 )
 
-// Reference is a string naming a Schema. It can name primitives ("string") or
-// any named type ("Foo" may refer to a record schema with the name "Foo").
-type Reference string
+var nameRegex = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
 // Schema represents the functionality of all Avro Schema types.
 type Schema interface {
@@ -35,8 +34,9 @@ type NameFields struct {
 
 // NamedSchema represents the functionality of any Record, Enum, or Fixed Schema.
 type NamedSchema interface {
-	NameFields() NameFields
+	GetNameFields() NameFields
 	Fullname() string
+	Valid() error
 }
 
 // Fullname returns the full namespaced name of the Schema.
@@ -47,8 +47,18 @@ func (n NameFields) Fullname() string {
 	return n.Name
 }
 
-func (n NameFields) NameFields() NameFields {
+func (n NameFields) GetNameFields() NameFields {
 	return n
+}
+
+func (n NameFields) Valid() error {
+	if n.Name == "" {
+		return errors.New(`name cannot be empty`)
+	}
+	if !nameRegex.MatchString(n.Name) {
+		return fmt.Errorf(`"%s" is an invalid name`, n.Name)
+	}
+	return nil
 }
 
 type Factories map[Reference]func() interface{} // TODO: maybe Schema as key?
